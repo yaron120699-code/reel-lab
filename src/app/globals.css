@@ -1,0 +1,146 @@
+@import "tailwindcss";
+
+/*
+  Colour in this interface means one thing only: evidence status.
+  Green = measured. Blue = observed. Ochre = inferred.
+  Nothing else is coloured, so a hue on screen always answers the same question.
+*/
+@theme {
+  --color-paper: #efefea;
+  --color-paper-raised: #f7f7f4;
+  --color-paper-sunken: #e6e6df;
+  --color-ink: #16191a;
+  --color-ink-muted: #5b615f;
+  --color-ink-faint: #8a8f8b;
+  --color-rule: #d5d6cd;
+  --color-rule-strong: #b9bbb0;
+
+  --color-measured: #1d5b4c;
+  --color-measured-wash: #e2ece8;
+  --color-observed: #2b4a86;
+  --color-observed-wash: #e2e7f1;
+  --color-inferred: #96620f;
+  --color-inferred-wash: #f2e9d9;
+
+  --font-display: "Frank Ruhl Libre", "Times New Roman", serif;
+  --font-sans: "IBM Plex Sans Hebrew", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --radius-card: 4px;
+}
+
+@layer base {
+  html {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+  }
+
+  body {
+    font-family: var(--font-sans);
+    font-feature-settings: "tnum" 0;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+}
+
+@layer components {
+  /* The signature: a spine on the reading edge of every evidence-bearing row. */
+  .spine {
+    border-inline-start-width: 3px;
+    border-inline-start-style: solid;
+  }
+
+  .lab-card {
+    background: var(--color-paper-raised);
+    border: 1px solid var(--color-rule);
+    border-radius: var(--radius-card);
+  }
+
+  .lab-input {
+    width: 100%;
+    background: var(--color-paper-raised);
+    border: 1px solid var(--color-rule-strong);
+    border-radius: var(--radius-card);
+    padding: 0.5rem 0.65rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--color-ink);
+  }
+
+  .lab-input::placeholder {
+    color: var(--color-ink-faint);
+  }
+
+  .lab-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--color-ink-muted);
+    margin-bottom: 0.3rem;
+  }
+
+  .lab-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    background: var(--color-ink);
+    color: var(--color-paper);
+    border: 1px solid var(--color-ink);
+    border-radius: var(--radius-card);
+    padding: 0.45rem 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .lab-button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .lab-button-quiet {
+    background: transparent;
+    color: var(--color-ink);
+    border-color: var(--color-rule-strong);
+    font-weight: 500;
+  }
+
+  /* Diagonal hatching marks a claim the data cannot carry on its own. */
+  .hatched {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 6px,
+      color-mix(in srgb, var(--color-inferred) 10%, transparent) 6px,
+      color-mix(in srgb, var(--color-inferred) 10%, transparent) 12px
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,44 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# next.js
+.next/
+out/
+next-env.d.ts
+
+# production
+build/
+dist/
+
+# local data — never commit competitor media, databases or secrets
+data/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+uploads/
+frames/
+tmp/
+*.mp4
+*.mov
+*.webm
+analysis-tmp/
+
+# env
+.env
+.env.local
+.env.*.local
+
+# misc
+.DS_Store
+*.log
+npm-debug.log*
+coverage/
+.vitest/
+.idea/
+.vscode/
+
+# typescript build cache
+*.tsbuildinfo
