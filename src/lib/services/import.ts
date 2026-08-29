@@ -2,6 +2,7 @@ import "@/lib/server-only";
 
 import { getRepositories } from "@/lib/repositories";
 import { getMediaStorage } from "@/lib/storage";
+import { serverEnv } from "@/lib/config/env";
 import { normalizeApifyText, type NormalizedReel } from "@/lib/apify/normalize";
 import type { ImportSource, Reel } from "@/lib/domain/types";
 
@@ -117,6 +118,13 @@ export async function attachVideoFile(params: {
   mimeType: string;
   bytes: Buffer;
 }): Promise<{ ok: true; mediaId: string } | { ok: false; error: string }> {
+  if (serverEnv.isVercel) {
+    return {
+      ok: false,
+      error: "צירוף MP4 זמין כרגע רק בהרצה המקומית. ייבוא ריל מכתובת עובד גם בענן.",
+    };
+  }
+
   const repos = getRepositories();
   const reel = await repos.reels.findById(params.reelId);
   if (!reel) return { ok: false, error: "הריל לא נמצא." };

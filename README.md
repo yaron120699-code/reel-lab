@@ -72,6 +72,7 @@ npm run seed:demo
 | `npm test` | הרצת הבדיקות |
 | `npm run verify` | lint + typecheck + tests + build |
 | `npm run db:migrate` | יצירת/עדכון הסכמה ב-SQLite |
+| `npm run db:migrate:cloud` | העתקת הנתונים המקומיים ל-Postgres/Supabase |
 | `npm run db:reset` | מחיקת בסיס הנתונים והקבצים המקומיים |
 | `npm run seed:demo` | טעינת נתוני הדמו |
 
@@ -86,6 +87,7 @@ npm run seed:demo
 | --- | --- | --- |
 | `DEMO_MODE` | `true` | מצב דמו — כל הזרימה עובדת בלי אישורים חיצוניים |
 | `DATABASE_FILE` | `./data/app.db` | קובץ ה-SQLite המקומי |
+| `POSTGRES_URL` | ריק | חיבור Supabase בענן; כשמוגדר הוא מחליף אוטומטית את SQLite |
 | `STORAGE_DIR` | `./data/uploads` | תיקיית קובצי הווידאו |
 | `ANALYSIS_PROVIDER` | `fixture` | `fixture` (אופליין) או `anthropic` (ניתוח חי) |
 | `ANALYSIS_API_KEY` | ריק | נקרא רק כש-`ANALYSIS_PROVIDER` אינו `fixture` |
@@ -102,6 +104,23 @@ npm run seed:demo
 והכותרות נושאות את המפתח.
 
 `.env` מוחרג מ-git. גם `data/` — בסיס הנתונים והסרטונים — מוחרג.
+
+### Supabase ב-Vercel
+
+חיבור Supabase דרך Vercel Storage יוצר אוטומטית `POSTGRES_URL`. כשמשתנה זה קיים,
+האפליקציה משתמשת ב-Postgres; במחשב המקומי, ללא המשתנה, היא ממשיכה להשתמש באותו SQLite.
+הסכמה נוצרת אוטומטית ובאופן idempotent בבקשה הראשונה.
+
+כדי להעביר פעם אחת את הנתונים המקומיים הקיימים לענן:
+
+```bash
+npx vercel link
+npx vercel env pull .env.cloud.local --environment=production
+npm run db:migrate:cloud
+```
+
+ההעברה בטוחה להרצה חוזרת ומעדכנת רשומות לפי המזהה שלהן. רשומות MP4 אינן מועברות, כי
+הקבצים עצמם נמצאים רק בתיקייה המקומית; ייבוא וניתוח רילים מכתובת עובדים בענן ללא MP4.
 
 ---
 
@@ -162,10 +181,10 @@ npm run seed:demo
 ```bash
 ANALYSIS_PROVIDER=gemini
 ANALYSIS_API_KEY=<מפתח מ-Google AI Studio>
-ANALYSIS_MODEL=gemini-2.5-flash-lite
+ANALYSIS_MODEL=gemini-3.5-flash-lite
 ```
 
-`gemini-2.5-flash-lite` עובד בשכבה החינמית. המפתח נקרא בצד השרת בלבד, נשלח אך ורק בכותרת
+`gemini-3.5-flash-lite` הוא המודל המוגדר בהרצה הנוכחית. המפתח נקרא בצד השרת בלבד, נשלח אך ורק בכותרת
 `x-goog-api-key`, ולעולם לא ב-URL — כתובות נשמרות בלוגים של פרוקסי ובהיסטוריית דפדפן.
 
 **מגבלה חשובה: קובץ ה-MP4 לא נשלח ל-Gemini.** הניתוח רץ על הכיתוב, התמלול והמדדים הציבוריים
@@ -239,11 +258,11 @@ src/
     apify/                 נרמול JSON + לקוח אופציונלי
     compare/               השוואתיות ומדד ביצועים
     config/                גישה למשתני סביבה (שרת בלבד)
-    db/                    חיבור SQLite וסכמה
+    db/                    חיבור וסכמה ל-SQLite ול-Postgres
     demo/                  נתוני הדמו ויצירת וידאו
     domain/                טיפוסי הדומיין
     patterns/              לוגיקה טהורה של תבניות
-    repositories/          ממשקים + מימוש SQLite
+    repositories/          ממשקים + מימושי SQLite ו-Postgres
     services/              ייבוא, ניתוח, השוואה, תבניות, דמו
     storage/               אחסון מדיה מקומי
     validation/            סכמות טפסים
@@ -253,9 +272,9 @@ tests/                     בדיקות
 
 ### שכבת ההחלפה ל-Supabase
 
-`src/lib/repositories/types.ts` מגדיר את הממשקים. `sqlite.ts` מממש אותם. `index.ts` הוא
-המפעל היחיד. אף עמוד, רכיב או שירות לא מייבא דרייבר בסיס נתונים ישירות. מעבר ל-Supabase =
-מימוש שני של `Repositories` ושורה אחת ב-`index.ts`.
+`src/lib/repositories/types.ts` מגדיר את הממשקים. `sqlite.ts` ו-`postgres.ts` מממשים אותם.
+`index.ts` הוא המפעל היחיד ובוחר לפי קיום `POSTGRES_URL`. אף עמוד, רכיב או שירות לא מייבא
+דרייבר בסיס נתונים ישירות.
 
 אותו דבר לאחסון: `MediaStorage` ב-`src/lib/storage/index.ts` הוא הממשק, והמימוש המקומי
 כותב ל-`data/uploads`.

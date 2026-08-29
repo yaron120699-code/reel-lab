@@ -53,11 +53,16 @@ export const serverEnv = {
    * control of their own data.
    */
   get autoSeedDemo(): boolean {
-    return this.demoMode && process.env.VERCEL === "1";
+    return this.demoMode && process.env.VERCEL === "1" && this.postgresUrl === null;
   },
   get databaseFile(): string {
     const raw = readString("DATABASE_FILE", "./data/app.db");
     return raw === ":memory:" ? raw : absolute(raw);
+  },
+  /** Supabase/Vercel server-only pooled connection string. */
+  get postgresUrl(): string | null {
+    const raw = readString("POSTGRES_URL", "");
+    return raw === "" ? null : raw;
   },
   get storageDir(): string {
     return absolute(readString("STORAGE_DIR", "./data/uploads"));
