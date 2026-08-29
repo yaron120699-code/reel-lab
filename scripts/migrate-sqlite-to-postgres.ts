@@ -124,7 +124,7 @@ async function main(): Promise<void> {
             .join(", ");
           await transaction.unsafe(
             `INSERT INTO ${table.name}
-             SELECT * FROM json_populate_recordset(NULL::${table.name}, $1::json)
+             SELECT * FROM json_populate_recordset(NULL::${table.name}, (($1::json #>> '{}')::json))
              ON CONFLICT (id) DO UPDATE SET ${updates}`,
             [JSON.stringify(rows)],
           );
