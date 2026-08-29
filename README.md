@@ -88,6 +88,8 @@ npm run seed:demo
 | `DEMO_MODE` | `true` | מצב דמו — כל הזרימה עובדת בלי אישורים חיצוניים |
 | `DATABASE_FILE` | `./data/app.db` | קובץ ה-SQLite המקומי |
 | `POSTGRES_URL` | ריק | חיבור Supabase בענן; כשמוגדר הוא מחליף אוטומטית את SQLite |
+| `LAB_USERNAME` | ריק | שם משתמש פרטי למעבדה ב-Vercel |
+| `LAB_PASSWORD` | ריק | סיסמת גישה פרטית למעבדה ב-Vercel |
 | `STORAGE_DIR` | `./data/uploads` | תיקיית קובצי הווידאו |
 | `ANALYSIS_PROVIDER` | `fixture` | `fixture` (אופליין) או `anthropic` (ניתוח חי) |
 | `ANALYSIS_API_KEY` | ריק | נקרא רק כש-`ANALYSIS_PROVIDER` אינו `fixture` |
@@ -121,6 +123,9 @@ npm run db:migrate:cloud
 
 ההעברה בטוחה להרצה חוזרת ומעדכנת רשומות לפי המזהה שלהן. רשומות MP4 אינן מועברות, כי
 הקבצים עצמם נמצאים רק בתיקייה המקומית; ייבוא וניתוח רילים מכתובת עובדים בענן ללא MP4.
+
+ב-Vercel חובה להגדיר גם `LAB_USERNAME` ו-`LAB_PASSWORD`. בלי שניהם הפריסה נסגרת עם 503;
+כשהם מוגדרים, הדפדפן מבקש אותם לפני כל גישה למעבדה ולנתיבי השרת שלה.
 
 ---
 
