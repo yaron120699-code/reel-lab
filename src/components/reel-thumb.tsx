@@ -15,16 +15,20 @@ export function ReelThumb({
   shortCode,
   thumbnailUrl,
   hasVideoFile,
+  className = "",
 }: {
   shortCode: string;
   thumbnailUrl: string | null;
   hasVideoFile: boolean;
+  className?: string;
 }) {
   const [failed, setFailed] = useState(false);
   const showImage = thumbnailUrl !== null && !failed;
 
   return (
-    <div className="relative flex h-36 items-center justify-center overflow-hidden border-b border-rule bg-paper-sunken">
+    <div
+      className={`relative flex aspect-[9/16] items-center justify-center overflow-hidden rounded-[3px] border border-rule bg-paper-sunken ${className}`}
+    >
       {showImage ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -49,16 +53,16 @@ export function ReelThumb({
         dir="ltr"
         className={
           showImage
-            ? "relative rounded-[3px] bg-paper/85 px-1.5 py-0.5 font-mono text-[0.7rem] text-ink"
-            : "relative rounded-[3px] border border-rule-strong bg-paper px-2 py-1 font-mono text-[0.78rem] tracking-wide text-ink-muted"
+            ? "relative rounded-[3px] bg-paper/85 px-1.5 py-0.5 font-mono text-[0.68rem] text-ink"
+            : "relative rounded-[3px] border border-rule-strong bg-paper px-1.5 py-1 text-center font-mono text-[0.68rem] leading-tight tracking-wide text-ink-muted"
         }
       >
         {shortCode}
       </span>
 
       {hasVideoFile ? (
-        <span className="absolute bottom-1.5 start-1.5 rounded-[3px] border border-measured/40 bg-measured-wash px-1.5 py-0.5 font-mono text-[0.62rem] text-measured">
-          MP4 מקומי
+        <span className="absolute bottom-1 start-1 rounded-[3px] border border-measured/40 bg-measured-wash px-1 py-0.5 font-mono text-[0.58rem] text-measured">
+          MP4
         </span>
       ) : null}
     </div>
