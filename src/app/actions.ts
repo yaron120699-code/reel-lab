@@ -4,14 +4,20 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { fetchApifyDatasetItems } from "@/lib/apify/client";
-import { getReadyRepositories } from "@/lib/demo/auto-seed";
+import { getRepositories } from "@/lib/repositories";
 import { runAnalysis } from "@/lib/services/analysis";
 import { buildComparison, saveComparison } from "@/lib/services/comparison";
 import { seedDemoData } from "@/lib/services/demo";
 import { attachVideoFile, importApifyJson } from "@/lib/services/import";
+import { ingestInstagramReel } from "@/lib/services/intake";
 import { createPatternCard } from "@/lib/services/patterns";
 import type { ActionState } from "@/lib/action-state";
-import { competitorFormSchema, fieldErrors, importFormSchema } from "@/lib/validation/forms";
+import {
+  competitorFormSchema,
+  fieldErrors,
+  importFormSchema,
+  reelUrlImportFormSchema,
+} from "@/lib/validation/forms";
 
 
 function text(formData: FormData, key: string): string {
@@ -43,7 +49,7 @@ export async function createCompetitorAction(
     };
   }
 
-  const repos = await getReadyRepositories();
+  const repos = getRepositories();
   const existing = await repos.competitors.findByUsername(parsed.data.instagramUsername);
   if (existing) {
     return {
@@ -68,13 +74,43 @@ export async function createCompetitorAction(
 export async function deleteCompetitorAction(formData: FormData): Promise<void> {
   const id = text(formData, "competitorId");
   if (id === "") return;
-  const repos = await getReadyRepositories();
-  await repos.competitors.remove(id);
+  await getRepositories().competitors.remove(id);
   revalidatePath("/competitors");
   revalidatePath("/reels");
 }
 
 /* --------------------------------- import -------------------------------- */
+
+export async function importReelUrlAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const parsed = reelUrlImportFormSchema.safeParse({ url: text(formData, "url") });
+  if (!parsed.success) {
+    return {
+      status: "error",
+      message: "צריך קישור תקין לריל.",
+      errors: fieldErrors(parsed.error),
+    };
+  }
+
+  const result = await ingestInstagramReel(parsed.data.url);
+  if (!result.ok) {
+    return { status: "error", message: result.error, detail: result.hint };
+  }
+
+  revalidatePath("/reels");
+  revalidatePath("/competitors");
+  revalidatePath(`/reels/${result.reelId}`);
+
+  if (result.analysis !== "failed") redirect(`/reels/${result.reelId}`);
+
+  return {
+    status: "ok",
+    message: "הריל יובא, אבל הניתוח האוטומטי נכשל.",
+    detail: `${result.analysisHint ?? ""} הריל נשמר ואפשר לנסות לנתח אותו ידנית מהספרייה.`,
+  };
+}
 
 export async function importApifyAction(
   _prev: ActionState,
@@ -244,8 +280,7 @@ export async function savePatternAction(
     .getAll("supportingReelIds")
     .filter((value): value is string => typeof value === "string" && value !== "");
 
-  const repos = await getReadyRepositories();
-  const result = await createPatternCard(repos, {
+  const result = await createPatternCard(getRepositories(), {
     comparisonId: text(formData, "comparisonId"),
     title: text(formData, "title"),
     description: text(formData, "description"),
@@ -276,8 +311,7 @@ export async function savePatternAction(
 export async function deletePatternAction(formData: FormData): Promise<void> {
   const id = text(formData, "patternId");
   if (id === "") return;
-  const repos = await getReadyRepositories();
-  await repos.patterns.remove(id);
+  await getRepositories().patterns.remove(id);
   revalidatePath("/patterns");
 }
 
@@ -291,13 +325,19 @@ export async function seedDemoAction(_prev: ActionState): Promise<ActionState> {
 
   if (!result.ok) return { status: "error", message: result.error };
 
-  const { createdReels, createdAnalyses, attachedVideos, videoNote, alreadySeeded } = result.result;
+  const { createdReels, attachedVideos, videoNote, alreadySeeded } =
+    result.result;
+
+  const updatedReels = 0;
+  const analysedReels = 0;
 
   return {
     status: "ok",
     message: alreadySeeded
-      ? "נתוני הדמו כבר טעונים — לא נוצרה כפילות."
-      : `נטענו ${createdReels} רילים, ${createdAnalyses} ניתוחי דוגמה, ${attachedVideos} קובצי וידאו.`,
-    detail: videoNote ?? undefined,
+      ? "נתוני הדמו רועננו."
+      : `נטענו ${createdReels} רילים, ${analysedReels} ניתוחי דוגמה, ${attachedVideos} קובצי וידאו.`,
+    detail:
+      videoNote ??
+      (updatedReels > 0 ? `${updatedReels} רילים קיימים עודכנו במדידה חדשה.` : undefined),
   };
 }

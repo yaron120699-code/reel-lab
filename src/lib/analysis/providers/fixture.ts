@@ -23,7 +23,7 @@ export function createFixtureAnalysisProvider(): AnalysisProvider {
       if (!fixture) {
         throw new AnalysisUnavailableError(
           "לא הוגדר ספק ניתוח חי, ולריל הזה אין ניתוח דוגמה מוכן.",
-          "הגדירו ANALYSIS_PROVIDER=anthropic ומפתח ANALYSIS_API_KEY בקובץ .env, או טענו את נתוני הדמו כדי לראות את מבנה הניתוח מקצה לקצה.",
+          "הגדירו ANALYSIS_PROVIDER=gemini או ANALYSIS_PROVIDER=anthropic יחד עם ANALYSIS_API_KEY בקובץ .env, או טענו את נתוני הדמו כדי לראות את מבנה הניתוח מקצה לקצה.",
         );
       }
 

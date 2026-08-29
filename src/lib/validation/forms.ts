@@ -39,6 +39,10 @@ export const importFormSchema = z.object({
   tags: tagList,
 });
 
+export const reelUrlImportFormSchema = z.object({
+  url: z.string().trim().url("הדביקו כתובת מלאה של ריל באינסטגרם."),
+});
+
 export const patternFormSchema = z.object({
   comparisonId: z.string().trim().optional(),
   title: z.string().trim().min(1, "צריך כותרת לתבנית."),

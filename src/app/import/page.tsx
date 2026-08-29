@@ -1,9 +1,9 @@
 import { Callout, EmptyState, PageHeader } from "@/components/ui";
 import { publicRuntimeFlags } from "@/lib/config/env";
 import { DEMO_APIFY_JSON } from "@/lib/demo/data";
-import { getReadyRepositories } from "@/lib/demo/auto-seed";
+import { getRepositories } from "@/lib/repositories";
 
-import { ApifyDatasetForm, ApifyJsonForm, AttachVideoForm } from "./import-forms";
+import { ApifyDatasetForm, ApifyJsonForm, AttachVideoForm, ReelUrlForm } from "./import-forms";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +23,7 @@ const NORMALIZED_FIELDS = [
 ];
 
 export default async function ImportPage() {
-  const repos = await getReadyRepositories();
+  const repos = getRepositories();
   const flags = publicRuntimeFlags();
 
   const [competitors, reelItems] = await Promise.all([
@@ -48,7 +48,7 @@ export default async function ImportPage() {
       <PageHeader
         eyebrow="שלב 3"
         title="ייבוא ריל"
-        lede="הזרימה הידנית היא הזרימה הראשית: מדביקים JSON, מצרפים MP4, מקשרים ליוצר. אין תלות בשום מפתח חיצוני."
+        lede="אפשר להדביק קישור לריל ולקבל ייבוא וניתוח אוטומטיים. הייבוא הידני נשאר זמין כגיבוי."
       />
 
       {competitors.length === 0 ? (
@@ -61,6 +61,7 @@ export default async function ImportPage() {
       ) : (
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="space-y-6">
+            <ReelUrlForm configured={flags.apifyConfigured} />
             <ApifyJsonForm competitors={competitorOptions} sampleJson={DEMO_APIFY_JSON} />
             <ApifyDatasetForm
               competitors={competitorOptions}

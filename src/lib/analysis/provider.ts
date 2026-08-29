@@ -47,11 +47,29 @@ export class AnalysisUnavailableError extends Error {
 
 export { ANALYSIS_PROMPT_VERSION };
 
+/**
+ * Chooses a provider. A live provider is used only when it is both selected and
+ * holds a key; otherwise the lab falls back to the offline fixture provider,
+ * which refuses to invent an analysis rather than producing a plausible one.
+ *
+ * Implementations are imported dynamically so an unused provider's module never
+ * loads, and so no secret-reading code is pulled in unless it is actually going
+ * to run.
+ */
 export async function getAnalysisProvider(): Promise<AnalysisProvider> {
-  if (serverEnv.analysisProvider === "anthropic" && serverEnv.analysisApiKey !== null) {
-    const { createAnthropicAnalysisProvider } = await import("./providers/anthropic");
-    return createAnthropicAnalysisProvider();
+  const selected = serverEnv.analysisProvider;
+
+  if (selected !== "fixture" && serverEnv.analysisApiKey !== null) {
+    if (selected === "anthropic") {
+      const { createAnthropicAnalysisProvider } = await import("./providers/anthropic");
+      return createAnthropicAnalysisProvider();
+    }
+    if (selected === "gemini") {
+      const { createGeminiAnalysisProvider } = await import("./providers/gemini");
+      return createGeminiAnalysisProvider();
+    }
   }
+
   const { createFixtureAnalysisProvider } = await import("./providers/fixture");
   return createFixtureAnalysisProvider();
 }

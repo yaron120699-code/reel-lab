@@ -25,11 +25,18 @@ function absolute(p: string): string {
   return path.isAbsolute(p) ? p : path.join(process.cwd(), p);
 }
 
-export type AnalysisProviderId = "fixture" | "anthropic";
+export type AnalysisProviderId = "fixture" | "anthropic" | "gemini";
+
+/** Every provider that performs a real model call. `fixture` is the offline default. */
+export const LIVE_ANALYSIS_PROVIDERS = ["anthropic", "gemini"] as const;
 
 function readAnalysisProvider(): AnalysisProviderId {
   const raw = readString("ANALYSIS_PROVIDER", "fixture").toLowerCase();
-  return raw === "anthropic" ? "anthropic" : "fixture";
+  // An unrecognised value falls back to `fixture` rather than failing loudly:
+  // a typo should leave the lab offline and honest, not half-configured.
+  return (LIVE_ANALYSIS_PROVIDERS as readonly string[]).includes(raw)
+    ? (raw as AnalysisProviderId)
+    : "fixture";
 }
 
 export const serverEnv = {
