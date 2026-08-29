@@ -158,13 +158,19 @@ describe("auto-seed gating", () => {
   it("stays off locally and turns on only for a Vercel demo deployment", async () => {
     const { serverEnv } = await import("@/lib/config/env");
     const original = process.env.VERCEL;
+    const originalPostgresUrl = process.env.POSTGRES_URL;
 
     delete process.env.VERCEL;
+    delete process.env.POSTGRES_URL;
     process.env.DEMO_MODE = "true";
     expect(serverEnv.autoSeedDemo).toBe(false);
 
     process.env.VERCEL = "1";
     expect(serverEnv.autoSeedDemo).toBe(true);
+
+    process.env.POSTGRES_URL = "postgres://configured.example/reel-lab";
+    expect(serverEnv.autoSeedDemo).toBe(false);
+    delete process.env.POSTGRES_URL;
 
     process.env.DEMO_MODE = "false";
     expect(serverEnv.autoSeedDemo).toBe(false);
@@ -172,5 +178,7 @@ describe("auto-seed gating", () => {
     process.env.DEMO_MODE = "true";
     if (original === undefined) delete process.env.VERCEL;
     else process.env.VERCEL = original;
+    if (originalPostgresUrl === undefined) delete process.env.POSTGRES_URL;
+    else process.env.POSTGRES_URL = originalPostgresUrl;
   });
 });

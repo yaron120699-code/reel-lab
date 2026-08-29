@@ -1,5 +1,8 @@
 import { getDb } from "@/lib/db/client";
+import { getPostgresDb } from "@/lib/db/postgres";
+import { serverEnv } from "@/lib/config/env";
 
+import { createPostgresRepositories } from "./postgres";
 import { createSqliteRepositories } from "./sqlite";
 import type { Repositories } from "./types";
 
@@ -11,5 +14,8 @@ export type { Repositories } from "./types";
  * database driver directly.
  */
 export function getRepositories(): Repositories {
+  if (serverEnv.postgresUrl !== null) {
+    return createPostgresRepositories(getPostgresDb());
+  }
   return createSqliteRepositories(getDb());
 }
